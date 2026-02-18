@@ -27,7 +27,7 @@ impl Ui {
         Self { hovered: None }
     }
 
-    pub fn draw(&mut self, state: &mut AppState, grid_w: f32, screen_w: f32, screen_h: f32) {
+    pub fn draw(&mut self, state: &mut AppState, grid_w: f32, _screen_w: f32, screen_h: f32) {
         // Sidebar background
         draw_rectangle(grid_w, 0.0, SIDEBAR_WIDTH, screen_h, BG);
         draw_line(grid_w, 0.0, grid_w, screen_h, 1.0, OVERLAY);
