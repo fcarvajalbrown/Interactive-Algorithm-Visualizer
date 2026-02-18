@@ -4,9 +4,9 @@ A high-performance pathfinding and maze generation visualizer built with Rust an
 
 ---
 
-## Live Demo
+## Live Demo (Doesn't Work)
 
-[GitHub Pages link here]
+https://fcarvajalbrown.github.io/Interactive-Algorithm-Visualizer/
 
 ---
 
