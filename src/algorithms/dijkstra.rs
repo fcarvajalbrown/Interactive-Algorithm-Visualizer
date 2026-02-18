@@ -6,11 +6,7 @@ use crate::stats::Stats;
 use super::reconstruct_path;
 
 pub fn run(grid: &mut Grid) -> Stats {
-    let perf = web_sys::window()
-        .and_then(|w| w.performance())
-        .expect("performance API unavailable");
-
-    let start_time = perf.now();
+    let start_time = macroquad::time::get_time();
 
     let mut start_idx = None;
     let mut end_idx = None;
@@ -34,18 +30,13 @@ pub fn run(grid: &mut Grid) -> Stats {
 
     'search: while let Some(Reverse((cost, current))) = heap.pop() {
         if cost > dist[current] { continue; }
-
         nodes_explored += 1;
-
         if current == end { break 'search; }
-
         let cell = grid.cell_mut(current);
         if !cell.is_start { cell.is_visited = true; }
-
         for neighbor in grid.neighbors(current) {
             let neighbor_cost = grid.cell(neighbor).cost as u32;
             let next_cost = cost + neighbor_cost;
-
             if next_cost < dist[neighbor] {
                 dist[neighbor] = next_cost;
                 parent[neighbor] = current;
@@ -55,7 +46,6 @@ pub fn run(grid: &mut Grid) -> Stats {
     }
 
     let path_length = reconstruct_path(grid, &parent, start, end);
-    let execution_ms = perf.now() - start_time;
-
+    let execution_ms = (macroquad::time::get_time() - start_time) * 1000.0;
     Stats { nodes_explored, path_length, execution_ms, path_found: path_length > 0 }
 }

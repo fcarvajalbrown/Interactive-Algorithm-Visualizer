@@ -59,5 +59,5 @@ fn maze_neighbors(grid: &Grid, idx: usize) -> Vec<(usize, usize)> {
 }
 
 fn random_index(len: usize) -> usize {
-    (js_sys::Math::random() * len as f64) as usize
+    macroquad::rand::gen_range(0, len)
 }
