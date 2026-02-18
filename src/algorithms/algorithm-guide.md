@@ -1,110 +1,58 @@
-// src/algorithms/astar.rs
-use std::collections::BinaryHeap;
-use std::cmp::Reverse;
-use web_sys::Performance;
-use crate::grid::Grid;
-use crate::stats::Stats;
+# 🛡️ The Pathfinding Lab: Algorithm Guide
 
-pub fn run(grid: &mut Grid) -> Stats {
-    let perf = web_sys::window()
-        .and_then(|w| w.performance())
-        .expect("performance API unavailable");
+This project implements four core pathfinding algorithms in Rust. While they all aim to find a path, they "think" differently and use different data structures to get the job done.
 
-    let start_time = perf.now();
+---
 
-    let mut start_idx = None;
-    let mut end_idx = None;
-    for i in 0..(grid.width * grid.height) {
-        if let Some(cell) = grid.get(i) {
-            if cell.is_start { start_idx = Some(i); }
-            if cell.is_end   { end_idx = Some(i); }
-        }
-    }
+## 1. Breadth-First Search (BFS) 
+**File:** `bfs.rs` | **Logic:** The "Wave"
 
-    let (Some(start), Some(end)) = (start_idx, end_idx) else {
-        return Stats::default();
-    };
+Imagine dropping a bucket of water on the start node. The water ripples out in every direction, one square at a time. It only hits the goal when it has touched every closer square first.
 
-    let size = grid.width * grid.height;
-    let mut g_cost = vec![u32::MAX; size]; // actual cost from start
-    let mut parent = vec![usize::MAX; size];
-    let mut nodes_explored: u32 = 0;
+* **Data Structure:** `VecDeque` (Queue - FIFO).
+* **How it works:** It visits all neighbors at distance 1, then all neighbors at distance 2, and so on.
+* **Guarantees Shortest Path?** Yes, but only for **unweighted** grids (where every step costs exactly 1).
+* **Downside:** It is "blind." It will explore the complete opposite direction of the goal just as much as the correct direction.
 
-    // f = g + h, heap ordered by f
-    let mut heap = BinaryHeap::new();
 
-    g_cost[start] = 0;
-    let h = manhattan(start, end, grid.width);
-    heap.push(Reverse((h, start)));
 
-    'search: while let Some(Reverse((_f, current))) = heap.pop() {
-        // Stale entry check
-        if current != start {
-            let current_g = g_cost[current];
-            let expected_f = current_g + manhattan(current, end, grid.width);
-            if _f > expected_f { continue; }
-        }
+---
 
-        nodes_explored += 1;
+## 2. Depth-First Search (DFS)
+**File:** `dfs.rs` | **Logic:** The "Stubborn Explorer"
 
-        if current == end { break 'search; }
+Imagine a mouse in a maze. It picks a path and runs as deep as it can until it hits a wall. Then it backtracks just enough to try a different turn.
 
-        if let Some(cell) = grid.get_mut(current) {
-            if !cell.is_start { cell.is_visited = true; }
-        }
+* **Data Structure:** `Vec` (Stack - LIFO).
+* **How it works:** It dives deep into one branch before checking other neighbors at the same level.
+* **Guarantees Shortest Path?** **No.** It finds *any* path, not the best one.
+* **Best For:** Maze generation or checking if two points are connected at all.
+* **Downside:** It might travel 1,000 steps to reach a goal that was only 2 steps away in the other direction.
 
-        for neighbor in grid.neighbors(current) {
-            let neighbor_cost = grid.get(neighbor)
-                .map(|c| c.cost as u32)
-                .unwrap_or(1);
+---
 
-            let tentative_g = g_cost[current] + neighbor_cost;
+## 3. Dijkstra's Algorithm
+**File:** `dijkstra.rs` | **Logic:** The "Smart Spreader"
 
-            if tentative_g < g_cost[neighbor] {
-                g_cost[neighbor] = tentative_g;
-                parent[neighbor] = current;
-                let f = tentative_g + manhattan(neighbor, end, grid.width);
-                heap.push(Reverse((f, neighbor)));
-            }
-        }
-    }
+A sophisticated BFS that understands "effort." Imagine a map where some roads are highways (cost 1) and others are muddy swamps (cost 10). Dijkstra always chooses the "cheapest" path explored so far.
 
-    let path_length = reconstruct_path(grid, &parent, start, end);
-    let execution_ms = perf.now() - start_time;
+* **Data Structure:** `BinaryHeap` (Min-Priority Queue).
+* **How it works:** It always extracts the node with the lowest cumulative cost from the start.
+* **Guarantees Shortest Path?** **Yes**, even on weighted grids with different terrain costs.
+* **Downside:** Like BFS, it is still blind. It explores in a perfect circle around the start, even if the goal is clearly to the East.
 
-    Stats {
-        nodes_explored,
-        path_length,
-        execution_ms,
-        path_found: path_length > 0,
-    }
-}
 
-/// Manhattan distance heuristic — admissible for 4-directional grids.
-/// Never overestimates, so A* remains optimal.
-fn manhattan(idx: usize, end: usize, width: usize) -> u32 {
-    let (r1, c1) = (idx / width, idx % width);
-    let (r2, c2) = (end / width, end % width);
-    ((r1 as i32 - r2 as i32).unsigned_abs()
-        + (c1 as i32 - c2 as i32).unsigned_abs())
-}
 
-fn reconstruct_path(grid: &mut Grid, parent: &[usize], start: usize, end: usize) -> u32 {
-    let mut length = 0;
-    let mut current = end;
+---
 
-    if parent[end] == usize::MAX && end != start {
-        return 0;
-    }
+## 4. A* Search (A-Star)
+**File:** `astar.rs` | **Logic:** The "Guided Missile"
 
-    while current != start {
-        if let Some(cell) = grid.get_mut(current) {
-            if !cell.is_end { cell.is_path = true; }
-        }
-        current = parent[current];
-        length += 1;
-        if current == usize::MAX { return 0; }
-    }
+Dijkstra with a compass. A* calculates the cost already spent ($g$) **plus** an educated guess (heuristic, $h$) of the remaining distance to the goal.
 
-    length
-}
+* **Data Structure:** `BinaryHeap` (Min-Priority Queue).
+* **The Formula:** $f(n) = g(n) + h(n)$
+    * $g(n)$: Distance from start to current node.
+    * $h(n)$: Estimated distance (Manhattan or Euclidean) to the goal.
+* **Guarantees Shortest Path?** **Yes**, provided the heuristic "guess" never overestimates the actual distance.
+* **Best For:** Most modern games and maps. It is significantly faster because it "beams" toward the goal.
