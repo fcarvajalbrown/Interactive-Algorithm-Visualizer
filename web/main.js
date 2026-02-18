@@ -1,7 +1,7 @@
 // web/main.js
-import init, { AlgoLab } from "../pkg/rust_wasm_algo_lab.js";
+import init, { AlgoLab } from "/rust-wasm-algo-lab.js";
 import { Renderer } from "./renderer.js";
-import { bindInput } from "./input.js";
+import { bindInput } from "/web/input.js";
 
 const GRID_WIDTH = 60;
 const GRID_HEIGHT = 40;

@@ -60,6 +60,7 @@ impl AlgoLab {
     }
 
     pub fn set_terrain(&mut self, idx: usize, cost: u16) {
+        web_sys::console::log_1(&format!("set_terrain idx={} cost={}", idx, cost).into());
         self.grid.set_terrain(idx, cost);
         self.grid.flush_render_buffer();
     }
