@@ -1,9 +1,9 @@
 // src/algorithms/astar.rs
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
-use web_sys::Performance;
 use crate::grid::Grid;
 use crate::stats::Stats;
+use super::reconstruct_path;
 
 pub fn run(grid: &mut Grid) -> Stats {
     let perf = web_sys::window()
@@ -26,19 +26,16 @@ pub fn run(grid: &mut Grid) -> Stats {
     };
 
     let size = grid.width * grid.height;
-    let mut g_cost = vec![u32::MAX; size]; // actual cost from start
+    let mut g_cost = vec![u32::MAX; size];
     let mut parent = vec![usize::MAX; size];
     let mut nodes_explored: u32 = 0;
 
-    // f = g + h, heap ordered by f
     let mut heap = BinaryHeap::new();
-
     g_cost[start] = 0;
     let h = manhattan(start, end, grid.width);
     heap.push(Reverse((h, start)));
 
     'search: while let Some(Reverse((_f, current))) = heap.pop() {
-        // Stale entry check
         if current != start {
             let current_g = g_cost[current];
             let expected_f = current_g + manhattan(current, end, grid.width);
@@ -80,31 +77,9 @@ pub fn run(grid: &mut Grid) -> Stats {
     }
 }
 
-/// Manhattan distance heuristic — admissible for 4-directional grids.
-/// Never overestimates, so A* remains optimal.
 fn manhattan(idx: usize, end: usize, width: usize) -> u32 {
     let (r1, c1) = (idx / width, idx % width);
     let (r2, c2) = (end / width, end % width);
     ((r1 as i32 - r2 as i32).unsigned_abs()
         + (c1 as i32 - c2 as i32).unsigned_abs())
-}
-
-fn reconstruct_path(grid: &mut Grid, parent: &[usize], start: usize, end: usize) -> u32 {
-    let mut length = 0;
-    let mut current = end;
-
-    if parent[end] == usize::MAX && end != start {
-        return 0;
-    }
-
-    while current != start {
-        if let Some(cell) = grid.get_mut(current) {
-            if !cell.is_end { cell.is_path = true; }
-        }
-        current = parent[current];
-        length += 1;
-        if current == usize::MAX { return 0; }
-    }
-
-    length
 }

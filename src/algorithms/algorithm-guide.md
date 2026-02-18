@@ -1,4 +1,4 @@
-# 🛡️ The Pathfinding Lab: Algorithm Guide
+# The Pathfinding Lab: Algorithm Guide
 
 This project implements four core pathfinding algorithms in Rust. While they all aim to find a path, they "think" differently and use different data structures to get the job done.
 

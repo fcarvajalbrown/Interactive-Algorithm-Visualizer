@@ -1,9 +1,9 @@
 // src/algorithms/dijkstra.rs
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
-use web_sys::Performance;
 use crate::grid::Grid;
 use crate::stats::Stats;
+use super::reconstruct_path;
 
 pub fn run(grid: &mut Grid) -> Stats {
     let perf = web_sys::window()
@@ -30,15 +30,11 @@ pub fn run(grid: &mut Grid) -> Stats {
     let mut parent = vec![usize::MAX; size];
     let mut nodes_explored: u32 = 0;
 
-    // BinaryHeap is a max-heap; Reverse flips it into a min-heap
-    // Each entry: (Reverse(cost), cell_index)
     let mut heap = BinaryHeap::new();
-
     dist[start] = 0;
     heap.push(Reverse((0u32, start)));
 
     'search: while let Some(Reverse((cost, current))) = heap.pop() {
-        // Skip stale entries (a cheaper path was already found)
         if cost > dist[current] { continue; }
 
         nodes_explored += 1;
@@ -73,24 +69,4 @@ pub fn run(grid: &mut Grid) -> Stats {
         execution_ms,
         path_found: path_length > 0,
     }
-}
-
-fn reconstruct_path(grid: &mut Grid, parent: &[usize], start: usize, end: usize) -> u32 {
-    let mut length = 0;
-    let mut current = end;
-
-    if parent[end] == usize::MAX && end != start {
-        return 0;
-    }
-
-    while current != start {
-        if let Some(cell) = grid.get_mut(current) {
-            if !cell.is_end { cell.is_path = true; }
-        }
-        current = parent[current];
-        length += 1;
-        if current == usize::MAX { return 0; }
-    }
-
-    length
 }

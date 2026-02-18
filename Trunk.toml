@@ -1,0 +1,11 @@
+# Trunk.toml
+[build]
+target = "index.html"
+dist = "dist"
+
+[watch]
+ignore = ["dist", "web"]
+
+[serve]
+port = 8080
+open = false
