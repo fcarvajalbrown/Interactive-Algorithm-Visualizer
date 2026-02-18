@@ -1,5 +1,4 @@
 // src/stats.rs
-use wasm_bindgen::prelude::*;
 use crate::AlgoResult;
 
 #[derive(Default, Clone, Copy)]

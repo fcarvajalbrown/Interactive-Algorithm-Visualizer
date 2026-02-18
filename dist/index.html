@@ -1,0 +1,24 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rust WASM Algorithm Lab</title>
+    <link rel="stylesheet" href="/style-c920ca43256fdcb9.css" integrity="sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb"/>
+  <link rel="modulepreload" href="/rust-wasm-algo-lab-7cb1c52a4102daec.js" crossorigin="anonymous" integrity="sha384-9DYX4fs8AvuX1Eln+tQIW2/l0cpD59ftrY4b+U5eyJMGifo13hGZboYBsZsWg1rK"><link rel="preload" href="/rust-wasm-algo-lab-7cb1c52a4102daec_bg.wasm" crossorigin="anonymous" integrity="sha384-eNCrVWEFaq+nEY4pDKYF+VyXGJl0aSQyFAdxZt4MkeOPCmbtry687GXea41c+5qO" as="fetch" type="application/wasm"></head>
+  <body>
+    <script type="module" src="web/main.js"></script>
+  
+<script type="module">
+import init, * as bindings from '/rust-wasm-algo-lab-7cb1c52a4102daec.js';
+const wasm = await init({ module_or_path: '/rust-wasm-algo-lab-7cb1c52a4102daec_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+</html>

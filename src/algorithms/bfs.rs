@@ -14,10 +14,8 @@ pub fn run(grid: &mut Grid) -> Stats {
     let mut start_idx = None;
     let mut end_idx = None;
     for i in 0..(grid.width * grid.height) {
-        if let Some(cell) = grid.get(i) {
-            if cell.is_start { start_idx = Some(i); }
-            if cell.is_end   { end_idx = Some(i); }
-        }
+        if grid.cell(i).is_start { start_idx = Some(i); }
+        if grid.cell(i).is_end   { end_idx = Some(i); }
     }
 
     let (Some(start), Some(end)) = (start_idx, end_idx) else {
@@ -38,9 +36,8 @@ pub fn run(grid: &mut Grid) -> Stats {
 
         if current == end { break 'search; }
 
-        if let Some(cell) = grid.get_mut(current) {
-            if !cell.is_start { cell.is_visited = true; }
-        }
+        let cell = grid.cell_mut(current);
+        if !cell.is_start { cell.is_visited = true; }
 
         for neighbor in grid.neighbors(current) {
             if !visited[neighbor] {
@@ -54,10 +51,5 @@ pub fn run(grid: &mut Grid) -> Stats {
     let path_length = reconstruct_path(grid, &parent, start, end);
     let execution_ms = perf.now() - start_time;
 
-    Stats {
-        nodes_explored,
-        path_length,
-        execution_ms,
-        path_found: path_length > 0,
-    }
+    Stats { nodes_explored, path_length, execution_ms, path_found: path_length > 0 }
 }

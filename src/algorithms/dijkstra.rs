@@ -15,10 +15,8 @@ pub fn run(grid: &mut Grid) -> Stats {
     let mut start_idx = None;
     let mut end_idx = None;
     for i in 0..(grid.width * grid.height) {
-        if let Some(cell) = grid.get(i) {
-            if cell.is_start { start_idx = Some(i); }
-            if cell.is_end   { end_idx = Some(i); }
-        }
+        if grid.cell(i).is_start { start_idx = Some(i); }
+        if grid.cell(i).is_end   { end_idx = Some(i); }
     }
 
     let (Some(start), Some(end)) = (start_idx, end_idx) else {
@@ -29,8 +27,8 @@ pub fn run(grid: &mut Grid) -> Stats {
     let mut dist = vec![u32::MAX; size];
     let mut parent = vec![usize::MAX; size];
     let mut nodes_explored: u32 = 0;
-
     let mut heap = BinaryHeap::new();
+
     dist[start] = 0;
     heap.push(Reverse((0u32, start)));
 
@@ -41,15 +39,11 @@ pub fn run(grid: &mut Grid) -> Stats {
 
         if current == end { break 'search; }
 
-        if let Some(cell) = grid.get_mut(current) {
-            if !cell.is_start { cell.is_visited = true; }
-        }
+        let cell = grid.cell_mut(current);
+        if !cell.is_start { cell.is_visited = true; }
 
         for neighbor in grid.neighbors(current) {
-            let neighbor_cost = grid.get(neighbor)
-                .map(|c| c.cost as u32)
-                .unwrap_or(1);
-
+            let neighbor_cost = grid.cell(neighbor).cost as u32;
             let next_cost = cost + neighbor_cost;
 
             if next_cost < dist[neighbor] {
@@ -63,10 +57,5 @@ pub fn run(grid: &mut Grid) -> Stats {
     let path_length = reconstruct_path(grid, &parent, start, end);
     let execution_ms = perf.now() - start_time;
 
-    Stats {
-        nodes_explored,
-        path_length,
-        execution_ms,
-        path_found: path_length > 0,
-    }
+    Stats { nodes_explored, path_length, execution_ms, path_found: path_length > 0 }
 }

@@ -15,10 +15,8 @@ pub fn run(grid: &mut Grid) -> Stats {
     let mut start_idx = None;
     let mut end_idx = None;
     for i in 0..(grid.width * grid.height) {
-        if let Some(cell) = grid.get(i) {
-            if cell.is_start { start_idx = Some(i); }
-            if cell.is_end   { end_idx = Some(i); }
-        }
+        if grid.cell(i).is_start { start_idx = Some(i); }
+        if grid.cell(i).is_end   { end_idx = Some(i); }
     }
 
     let (Some(start), Some(end)) = (start_idx, end_idx) else {
@@ -29,16 +27,14 @@ pub fn run(grid: &mut Grid) -> Stats {
     let mut g_cost = vec![u32::MAX; size];
     let mut parent = vec![usize::MAX; size];
     let mut nodes_explored: u32 = 0;
-
     let mut heap = BinaryHeap::new();
+
     g_cost[start] = 0;
-    let h = manhattan(start, end, grid.width);
-    heap.push(Reverse((h, start)));
+    heap.push(Reverse((manhattan(start, end, grid.width), start)));
 
     'search: while let Some(Reverse((_f, current))) = heap.pop() {
         if current != start {
-            let current_g = g_cost[current];
-            let expected_f = current_g + manhattan(current, end, grid.width);
+            let expected_f = g_cost[current] + manhattan(current, end, grid.width);
             if _f > expected_f { continue; }
         }
 
@@ -46,15 +42,11 @@ pub fn run(grid: &mut Grid) -> Stats {
 
         if current == end { break 'search; }
 
-        if let Some(cell) = grid.get_mut(current) {
-            if !cell.is_start { cell.is_visited = true; }
-        }
+        let cell = grid.cell_mut(current);
+        if !cell.is_start { cell.is_visited = true; }
 
         for neighbor in grid.neighbors(current) {
-            let neighbor_cost = grid.get(neighbor)
-                .map(|c| c.cost as u32)
-                .unwrap_or(1);
-
+            let neighbor_cost = grid.cell(neighbor).cost as u32;
             let tentative_g = g_cost[current] + neighbor_cost;
 
             if tentative_g < g_cost[neighbor] {
@@ -69,17 +61,12 @@ pub fn run(grid: &mut Grid) -> Stats {
     let path_length = reconstruct_path(grid, &parent, start, end);
     let execution_ms = perf.now() - start_time;
 
-    Stats {
-        nodes_explored,
-        path_length,
-        execution_ms,
-        path_found: path_length > 0,
-    }
+    Stats { nodes_explored, path_length, execution_ms, path_found: path_length > 0 }
 }
 
 fn manhattan(idx: usize, end: usize, width: usize) -> u32 {
     let (r1, c1) = (idx / width, idx % width);
     let (r2, c2) = (end / width, end % width);
-    ((r1 as i32 - r2 as i32).unsigned_abs()
-        + (c1 as i32 - c2 as i32).unsigned_abs())
+    (r1 as i32 - r2 as i32).unsigned_abs()
+        + (c1 as i32 - c2 as i32).unsigned_abs()
 }

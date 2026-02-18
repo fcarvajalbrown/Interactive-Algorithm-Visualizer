@@ -15,9 +15,8 @@ pub fn reconstruct_path(grid: &mut Grid, parent: &[usize], start: usize, end: us
     }
 
     while current != start {
-        if let Some(cell) = grid.get_mut(current) {
-            if !cell.is_end { cell.is_path = true; }
-        }
+        let cell = grid.cell_mut(current);
+        if !cell.is_end { cell.is_path = true; }
         current = parent[current];
         length += 1;
         if current == usize::MAX { return 0; }
