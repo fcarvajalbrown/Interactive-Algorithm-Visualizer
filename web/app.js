@@ -1,6 +1,5 @@
 // web/app.js
-
-// ── Constants ──
+console.log("app.js executing");
 const GRID_WIDTH = 60;
 const GRID_HEIGHT = 40;
 
@@ -15,7 +14,6 @@ const CELL_COLORS = {
   7: "#5a8aa1",
 };
 
-// ── State ──
 let lab = null;
 let wasm = null;
 let canvas = null;
@@ -23,39 +21,44 @@ let ctx = null;
 let cellW = 0;
 let cellH = 0;
 
-// ── Init ──
-async function main() {
-  lab = new wasm_bindgen.AlgoLab(GRID_WIDTH, GRID_HEIGHT);
-
+async function startApp() {
+  wasm = window.__wasm;
+  lab = new window.__AlgoLab(GRID_WIDTH, GRID_HEIGHT);
   canvas = document.getElementById("grid-canvas");
   ctx = canvas.getContext("2d");
 
-  resize();
-  window.addEventListener("resize", resize);
-
+  // Set start/end BEFORE any draw call
   lab.set_start(gridIdx(1, 1));
   lab.set_end(gridIdx(GRID_HEIGHT - 2, GRID_WIDTH - 2));
-  draw();
+
+  // Now safe to size and draw
+lab.set_start(gridIdx(1, 1));
+  lab.set_end(gridIdx(GRID_HEIGHT - 2, GRID_WIDTH - 2));
+
+  setTimeout(() => {
+    computeSize();
+    draw();
+  }, 100);
+
+  window.addEventListener("resize", () => { computeSize(); draw(); });
 
   bindButtons();
   bindInput();
 }
 
-// ── Grid ──
 function gridIdx(row, col) {
   return row * GRID_WIDTH + col;
 }
 
-// ── Renderer ──
-function resize() {
+function computeSize() {
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
   cellW = canvas.width / GRID_WIDTH;
   cellH = canvas.height / GRID_HEIGHT;
-  draw();
 }
 
 function draw() {
+  if (!lab || !wasm) return;
   const ptr = lab.render_buffer_ptr();
   const len = lab.render_buffer_len();
   const buffer = new Uint8Array(wasm.memory.buffer, ptr, len);
@@ -85,7 +88,6 @@ function draw() {
   }
 }
 
-// ── Input ──
 function bindInput() {
   let isMouseDown = false;
   let drawMode = null;
@@ -131,7 +133,6 @@ function bindInput() {
   });
 }
 
-// ── Terrain ──
 function activateTerrainMode(cost) {
   function onTerrainClick(e) {
     const rect = canvas.getBoundingClientRect();
@@ -144,7 +145,6 @@ function activateTerrainMode(cost) {
   canvas.addEventListener("click", onTerrainClick);
 }
 
-// ── Algorithms ──
 function runAlgo(name) {
   lab.reset_search();
   const result = lab[`run_${name}`]();
@@ -152,7 +152,6 @@ function runAlgo(name) {
   displayStats(result);
 }
 
-// ── Maze ──
 function resetAll() {
   lab.reset_all();
   lab.set_start(gridIdx(1, 1));
@@ -161,7 +160,6 @@ function resetAll() {
   clearStats();
 }
 
-// ── Stats ──
 function displayStats(result) {
   document.getElementById("stat-nodes").textContent = result.nodes_explored();
   document.getElementById("stat-path").textContent = result.path_found()
@@ -176,7 +174,6 @@ function clearStats() {
   document.getElementById("stat-time").textContent = "-";
 }
 
-// ── Buttons ──
 function bindButtons() {
   document.getElementById("btn-bfs").onclick = () => runAlgo("bfs");
   document.getElementById("btn-dfs").onclick = () => runAlgo("dfs");
@@ -203,9 +200,4 @@ function bindButtons() {
   document.getElementById("btn-reset-all").onclick = resetAll;
 }
 
-window.addEventListener("TrunkApplicationStarted", (ev) => {
-  wasm = ev.detail.wasm;
-  wasm_bindgen = window.wasmBindings;
-  console.log("wasm keys:", Object.keys(wasm));
-  main();
-});
+window.startApp = startApp;

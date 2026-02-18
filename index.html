@@ -4,8 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rust WASM Algorithm Lab</title>
-    <link data-trunk rel="css" href="web/style.css" />
-    <link data-trunk rel="rust" />
+    <link rel="stylesheet" href="web/style.css" />
   </head>
   <body>
     <div id="app">
@@ -56,6 +55,22 @@
       </main>
 
     </div>
-    <link data-trunk rel="inline" type="js" href="web/app.js" />
+    <script type="module">
+      import init, { AlgoLab } from "./pkg/rust_wasm_algo_lab.js";
+
+      async function main() {
+        const wasm = await init();
+        window.__wasm = wasm;
+        window.__AlgoLab = AlgoLab;
+      }
+
+      main().then(() => {
+        console.log("WASM init done", window.__wasm, window.__AlgoLab);
+        const script = document.createElement("script");
+        script.src = "./web/app.js";
+        script.onload = () => window.startApp();
+        document.body.appendChild(script);
+      });
+    </script>
   </body>
 </html>
