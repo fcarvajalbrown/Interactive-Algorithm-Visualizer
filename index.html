@@ -1,76 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rust WASM Algorithm Lab</title>
-    <link rel="stylesheet" href="web/style.css" />
-  </head>
-  <body>
-    <div id="app">
-
-      <header>
-        <h1>Algorithm Lab</h1>
-      </header>
-
-      <main>
-        <canvas id="grid-canvas"></canvas>
-
-        <aside id="sidebar">
-
-          <section>
-            <h2>Algorithms</h2>
-            <button id="btn-bfs">BFS</button>
-            <button id="btn-dfs">DFS</button>
-            <button id="btn-dijkstra">Dijkstra</button>
-            <button id="btn-astar">A*</button>
-          </section>
-
-          <section>
-            <h2>Maze</h2>
-            <button id="btn-maze-backtracker">Recursive Backtracker</button>
-            <button id="btn-maze-prims">Prim's</button>
-          </section>
-
-          <section>
-            <h2>Terrain</h2>
-            <button id="btn-terrain-mud">Mud (cost 3)</button>
-            <button id="btn-terrain-water">Water (cost 5)</button>
-          </section>
-
-          <section>
-            <h2>Controls</h2>
-            <button id="btn-reset-search">Reset Search</button>
-            <button id="btn-reset-all">Reset All (R)</button>
-          </section>
-
-          <section id="stats">
-            <h2>Stats</h2>
-            <p>Nodes explored: <span id="stat-nodes">-</span></p>
-            <p>Path length: <span id="stat-path">-</span></p>
-            <p>Time: <span id="stat-time">-</span></p>
-          </section>
-
-        </aside>
-      </main>
-
-    </div>
-    <script type="module">
-      import init, { AlgoLab } from "./pkg/rust_wasm_algo_lab.js";
-
-      async function main() {
-        const wasm = await init();
-        window.__wasm = wasm;
-        window.__AlgoLab = AlgoLab;
-      }
-
-      main().then(() => {
-        console.log("WASM init done", window.__wasm, window.__AlgoLab);
-        const script = document.createElement("script");
-        script.src = "./web/app.js";
-        script.onload = () => window.startApp();
-        document.body.appendChild(script);
-      });
-    </script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <title>Algorithm Lab</title>
+  <style>
+    * { margin: 0; padding: 0; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="glcanvas" tabindex="1"></canvas>
+  <script src="https://not-fl3.github.io/miniquad-samples/mq_js_bundle.js"></script>
+  <script>load("rust-wasm-algo-lab.wasm");</script>
+</body>
 </html>
